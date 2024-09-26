@@ -1,0 +1,129 @@
+import json
+from datetime import datetime
+
+# Task class to represent individual tasks
+class Task:
+    def __init__(self, description, due_date):
+        self.description = description
+        self.due_date = due_date
+        self.completed = False
+
+    def mark_complete(self):
+        self.completed = True
+
+    def __str__(self):
+        status = 'Completed' if self.completed else 'Pending'
+        return f"{self.description} (Due: {self.due_date}) - {status}"
+
+
+# Add a new task
+def add_task(tasks):
+    description = input("Enter task description: ")
+    due_date = input("Enter due date (YYYY-MM-DD): ")
+    
+    # Validate date format
+    try:
+        datetime.strptime(due_date, "%Y-%m-%d")
+    except ValueError:
+        print("Invalid date format! Please enter the date in YYYY-MM-DD format.")
+        return
+    
+    task = Task(description, due_date)
+    tasks.append(task)
+    print("Task added successfully!")
+
+
+# View all tasks
+def view_tasks(tasks):
+    if not tasks:
+        print("No tasks available.")
+        return
+    
+    print("\nTasks:")
+    for idx, task in enumerate(tasks, 1):
+        print(f"{idx}. {task}")
+    print("\n")
+
+
+# Mark a task as complete
+def mark_task_complete(tasks):
+    if not tasks:
+        print("No tasks available.")
+        return
+    
+    view_tasks(tasks)
+    task_id = int(input("Enter task number to mark as complete: ")) - 1
+
+    if 0 <= task_id < len(tasks):
+        tasks[task_id].mark_complete()
+        print("Task marked as complete.")
+    else:
+        print("Invalid task number.")
+
+
+# Delete a task
+def delete_task(tasks):
+    if not tasks:
+        print("No tasks available.")
+        return
+    
+    view_tasks(tasks)
+    task_id = int(input("Enter task number to delete: ")) - 1
+
+    if 0 <= task_id < len(tasks):
+        removed_task = tasks.pop(task_id)
+        print(f"Deleted task: {removed_task.description}")
+    else:
+        print("Invalid task number.")
+
+
+# Save tasks to a JSON file
+def save_tasks(tasks, filename="tasks.json"):
+    tasks_data = [{"description": task.description, "due_date": task.due_date, "completed": task.completed} for task in tasks]
+    with open(filename, 'w') as f:
+        json.dump(tasks_data, f)
+    print("Tasks saved to file.")
+
+
+# Load tasks from a JSON file
+def load_tasks(filename="tasks.json"):
+    try:
+        with open(filename, 'r') as f:
+            tasks_data = json.load(f)
+            return [Task(task['description'], task['due_date']) for task in tasks_data]
+    except FileNotFoundError:
+        return []
+
+
+# Main function to run the To-Do List app
+def main():
+    tasks = load_tasks()
+
+    while True:
+        print("\nTo-Do List:")
+        print("1. Add Task")
+        print("2. View Tasks")
+        print("3. Mark Task as Complete")
+        print("4. Delete Task")
+        print("5. Save and Exit")
+        
+        choice = input("Choose an option: ")
+        
+        if choice == '1':
+            add_task(tasks)
+        elif choice == '2':
+            view_tasks(tasks)
+        elif choice == '3':
+            mark_task_complete(tasks)
+        elif choice == '4':
+            delete_task(tasks)
+        elif choice == '5':
+            save_tasks(tasks)
+            print("Exiting the To-Do List application.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
